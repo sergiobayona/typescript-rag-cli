@@ -1,6 +1,9 @@
+// src/services/dataService.ts
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isHtml, stripHtml } from '../utils/htmlUtils';
+import ora from 'ora';
 
 /**
  * Fetches Paul Graham's essay from GitHub
@@ -18,8 +21,20 @@ export async function fetchEssay(): Promise<string> {
  */
 export async function fetchFromUrl(url: string): Promise<string> {
   try {
+    const spinner = ora('Fetching content from URL...').start();
     const response = await axios.get(url);
-    return response.data;
+    let content = response.data;
+    
+    // Check if content is HTML and strip tags if needed
+    if (isHtml(content)) {
+      spinner.text = 'HTML content detected, stripping tags...';
+      content = stripHtml(content);
+      spinner.succeed('HTML tags removed successfully');
+    } else {
+      spinner.succeed('Content fetched successfully');
+    }
+    
+    return content;
   } catch (error) {
     throw new Error(`Failed to fetch from URL: ${error}`);
   }
@@ -33,7 +48,15 @@ export async function fetchFromUrl(url: string): Promise<string> {
 export async function readFromFile(filePath: string): Promise<string> {
   try {
     const absolutePath = path.resolve(filePath);
-    return fs.readFileSync(absolutePath, 'utf8');
+    const content = fs.readFileSync(absolutePath, 'utf8');
+    
+    // Check if content is HTML and strip tags if needed
+    if (isHtml(content)) {
+      console.log('HTML content detected in file, stripping tags...');
+      return stripHtml(content);
+    }
+    
+    return content;
   } catch (error) {
     throw new Error(`Failed to read from file: ${error}`);
   }

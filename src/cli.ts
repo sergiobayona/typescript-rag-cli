@@ -261,6 +261,7 @@ program
       const choices = [
         { name: 'Add Document', value: 'add' },
         { name: 'List Documents', value: 'list' },
+        { name: 'Remove Document', value: 'remove' },
         { name: 'Query Documents', value: 'query' },
         { name: 'Exit', value: 'exit' }
       ];
@@ -288,6 +289,11 @@ program
           if (listCommand) {
             await listCommand.parseAsync([]); // Parse with empty args to run the action with no options
           }
+        } else if (action === 'remove') {
+          const removeCommand = program.commands.find(c => c.name() === 'remove');
+          if (removeCommand) {
+            await removeCommand.parseAsync([]); // Parse with empty args to run the action with no options
+          }
         } else if (action === 'query') {
           const { askQuestion } = await inquirer.prompt([{
             type: 'confirm',
@@ -313,6 +319,59 @@ program
       }
     } catch (error) {
       console.error('Error in interactive mode:', error);
+    }
+  });
+  program
+  .command('remove')
+  .description('Remove a document from the RAG system')
+  .option('-n, --name <name>', 'Name of the document to remove')
+  .action(async (options: { name?: string }) => {
+    try {
+      const documents = documentStore.listDocuments();
+      if (documents.length === 0) {
+        console.log('No documents available to remove.');
+        return;
+      }
+
+      let docToRemove = options.name;
+
+      // If no document name provided, prompt user to select one
+      if (!docToRemove) {
+        const answer = await inquirer.prompt([{
+          type: 'list',
+          name: 'selectedDoc',
+          message: 'Select a document to remove:',
+          choices: documents.map(doc => doc.name)
+        }]);
+        docToRemove = answer.selectedDoc;
+      } else {
+        // Verify the specified document exists
+        if (!documents.some(doc => doc.name === docToRemove)) {
+          console.log(`Document "${docToRemove}" not found.`);
+          return;
+        }
+      }
+
+      // Confirm removal
+      const confirmAnswer = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'confirmRemoval',
+        message: `Are you sure you want to remove document "${docToRemove}"? This cannot be undone.`,
+        default: false
+      }]);
+
+      if (confirmAnswer.confirmRemoval) {
+        const removed = documentStore.removeDocument(docToRemove);
+        if (removed) {
+          console.log(`Document "${docToRemove}" has been removed successfully.`);
+        } else {
+          console.log(`Failed to remove document "${docToRemove}".`);
+        }
+      } else {
+        console.log('Operation cancelled.');
+      }
+    } catch (error) {
+      console.error('Error removing document:', error);
     }
   });
 

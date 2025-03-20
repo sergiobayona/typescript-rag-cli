@@ -71,3 +71,4 @@ pids
 *.pid
 *.seed
 *.pid.lock
+.ts-rag-data/

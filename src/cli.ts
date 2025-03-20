@@ -9,6 +9,28 @@ import { VectorIndex } from './models/vectorIndex';
 import { runCompletion } from './services/completionService';
 import { DocumentStore } from './models/documentStore';
 
+// Define the Document interface to match DocumentStore
+interface Document {
+  name: string;
+  text: string;
+  chunks: string[];
+  vectorIndex: VectorIndex;
+}
+
+// Define interface for command options
+interface AddCommandOptions {
+  url?: string;
+  file?: string;
+  name?: string;
+  chunkSize?: string;
+}
+
+interface QueryCommandOptions {
+  query?: string;
+  document?: string;
+  numChunks?: string;
+}
+
 // Initialize document store
 const documentStore = new DocumentStore();
 
@@ -25,9 +47,9 @@ program
   .description('Add a document to the RAG system')
   .option('-u, --url <url>', 'URL to fetch document from')
   .option('-f, --file <file>', 'Local file path to read document from')
-  .option('-n, --name <name>', 'Name to identify the document')
+  .option('-n, --name <n>', 'Name to identify the document')
   .option('-c, --chunk-size <size>', 'Size of text chunks', '2048')
-  .action(async (options) => {
+  .action(async (options: AddCommandOptions) => {
     try {
       let text: string;
       let name = options.name;
@@ -38,18 +60,26 @@ program
           type: 'input',
           name: 'docName',
           message: 'Enter a name for this document:',
-          validate: (input) => input.trim() !== '' ? true : 'Name cannot be empty'
+          validate: (input: string) => input.trim() !== '' ? true : 'Name cannot be empty'
         }]);
         name = answer.docName;
       }
 
       // Get the document text based on the provided options
       if (options.url) {
-        console.log(`Fetching document from URL: ${options.url}`);
-        text = await fetchFromUrl(options.url);
+        const url = options.url;
+        if (!url) {
+          throw new Error('URL is required');
+        }
+        console.log(`Fetching document from URL: ${url}`);
+        text = await fetchFromUrl(url);
       } else if (options.file) {
-        console.log(`Reading document from file: ${options.file}`);
-        text = await readFromFile(options.file);
+        const filePath = options.file;
+        if (!filePath) {
+          throw new Error('File path is required');
+        }
+        console.log(`Reading document from file: ${filePath}`);
+        text = await readFromFile(filePath);
       } else {
         // If neither URL nor file is provided, prompt user
         const sourceAnswer = await inquirer.prompt([{
@@ -127,46 +157,54 @@ program
   .option('-d, --document <name>', 'Name of document to query (if not specified, will query all)')
   .option('-n, --num-chunks <number>', 'Number of chunks to retrieve', '2')
   .option('-q, --query <question>', 'Question to ask')
-  .action(async (options) => {
+  .action(async (options: QueryCommandOptions) => {
     try {
       const documents = documentStore.listDocuments();
       if (documents.length === 0) {
-        console.log('No documents available. Add one with the "add" command.');
+        console.log('No documents found. Please add a document first.');
         return;
       }
 
-      let docName = options.document;
+      const docName = options.document;
       let question = options.query;
-      const numChunks = parseInt(options.numChunks);
+      const numChunks = options.numChunks ? parseInt(options.numChunks, 10) : 2;
 
-      // If no document is specified, prompt the user
-      if (!docName) {
+      // Use specified document or prompt user to select one
+      let documentToQuery: string;
+      if (docName && documents.some(doc => doc.name === docName)) {
+        documentToQuery = docName;
+      } else {
         const docAnswer = await inquirer.prompt([{
           type: 'list',
           name: 'selectedDoc',
           message: 'Select a document to query:',
           choices: documents.map(doc => doc.name).concat(['All documents'])
         }]);
-        docName = docAnswer.selectedDoc;
+        documentToQuery = docAnswer.selectedDoc;
       }
 
       // If no question is provided, prompt for one
+      let questionEmbedding: number[];
       if (!question) {
         const questionAnswer = await inquirer.prompt([{
           type: 'input',
           name: 'userQuestion',
-          message: 'Enter your question:',
-          validate: (input) => input.trim() !== '' ? true : 'Question cannot be empty'
+          message: 'What would you like to ask about this document?',
+          validate: (input: string) => input.trim() !== '' ? true : 'Question cannot be empty'
         }]);
         question = questionAnswer.userQuestion;
+        questionEmbedding = await getTextEmbedding(question);
+      } else {
+        if (!question) {
+          throw new Error('Question is required');
+        }
+        console.log(`Processing query: ${question}`);
+        questionEmbedding = await getTextEmbedding(question!);
       }
-
-      console.log(`Generating embedding for question: "${question}"`);
-      const questionEmbedding = await getTextEmbedding(question);
 
       let retrievedChunks: string[] = [];
       
-      if (docName === 'All documents') {
+      if (documentToQuery === 'All documents') {
         // Query all documents and combine results
         for (const doc of documents) {
           const indices = doc.vectorIndex.search(questionEmbedding, numChunks);
@@ -178,9 +216,9 @@ program
         }
       } else {
         // Query specific document
-        const document = documentStore.getDocument(docName);
+        const document = documentStore.getDocument(documentToQuery);
         if (!document) {
-          console.log(`Document "${docName}" not found.`);
+          console.log(`Document "${documentToQuery}" not found.`);
           return;
         }
         
@@ -218,43 +256,63 @@ program
     console.log('Starting interactive RAG mode. Type "exit" to quit.');
     console.log('Type "help" to see available commands.');
     
-    let running = true;
-    while (running) {
-      const answer = await inquirer.prompt([{
-        type: 'input',
-        name: 'command',
-        message: 'ts-rag> '
-      }]);
-      
-      const cmd = answer.command.trim();
-      
-      if (cmd === 'exit') {
-        running = false;
-        console.log('Exiting interactive mode.');
-      } else if (cmd === 'help') {
-        console.log(`
-Available commands:
-  add          - Add a document
-  list         - List available documents
-  query        - Query a document
-  exit         - Exit interactive mode
-  help         - Show this help message
-        `);
-      } else if (cmd === 'add') {
-        await program.commands.find(c => c.name() === 'add').action();
-      } else if (cmd === 'list') {
-        await program.commands.find(c => c.name() === 'list').action();
-      } else if (cmd.startsWith('query')) {
-        // If the command starts with 'query', treat the rest as a question
-        const question = cmd.substring('query'.length).trim();
-        if (question) {
-          await program.commands.find(c => c.name() === 'query').action({ query: question });
-        } else {
-          await program.commands.find(c => c.name() === 'query').action({});
+    try {
+      // Menu options for the main menu
+      const choices = [
+        { name: 'Add Document', value: 'add' },
+        { name: 'List Documents', value: 'list' },
+        { name: 'Query Documents', value: 'query' },
+        { name: 'Exit', value: 'exit' }
+      ];
+
+      while (true) {
+        const { action } = await inquirer.prompt([{
+          type: 'list',
+          name: 'action',
+          message: 'What would you like to do?',
+          choices
+        }]);
+
+        if (action === 'exit') {
+          console.log('Goodbye!');
+          break;
         }
-      } else {
-        console.log(`Unknown command: "${cmd}". Type "help" for available commands.`);
+
+        if (action === 'add') {
+          const addCommand = program.commands.find(c => c.name() === 'add');
+          if (addCommand) {
+            await addCommand.parseAsync([]); // Parse with empty args to run the action with no options
+          }
+        } else if (action === 'list') {
+          const listCommand = program.commands.find(c => c.name() === 'list');
+          if (listCommand) {
+            await listCommand.parseAsync([]); // Parse with empty args to run the action with no options
+          }
+        } else if (action === 'query') {
+          const { askQuestion } = await inquirer.prompt([{
+            type: 'confirm',
+            name: 'askQuestion',
+            message: 'Would you like to provide a question now?',
+            default: true
+          }]);
+
+          const queryCommand = program.commands.find(c => c.name() === 'query');
+          if (queryCommand) {
+            if (askQuestion) {
+              const { question } = await inquirer.prompt([{
+                type: 'input',
+                name: 'question',
+                message: 'Enter your question:',
+              }]);
+              await queryCommand.parseAsync(['--query', question]); // Parse with query option
+            } else {
+              await queryCommand.parseAsync([]); // Parse with empty args to run the action with no options
+            }
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error in interactive mode:', error);
     }
   });
 

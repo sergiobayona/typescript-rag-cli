@@ -1,37 +1,92 @@
 // src/services/dataService.ts
-import axios from 'axios';
+import { request } from 'undici';
 import * as fs from 'fs';
 import * as path from 'path';
-import { isHtml, stripHtml } from '../utils/htmlUtils';
+import { isHtml, extractTextFromHtml, extractMetadata } from '../utils/enhancedHtmlUtils';
 import ora from 'ora';
+
+/**
+ * HTML processing options
+ */
+export interface HtmlProcessingOptions {
+  /** Whether to preserve original HTML instead of extracting text */
+  preserveHtml?: boolean;
+  /** Whether to extract and include metadata from HTML documents */
+  extractMetadata?: boolean;
+}
 
 /**
  * Fetches Paul Graham's essay from GitHub
  * @returns Promise containing essay text
  */
 export async function fetchEssay(): Promise<string> {
-  const response = await axios.get('https://raw.githubusercontent.com/run-llama/llama_index/main/docs/docs/examples/data/paul_graham/paul_graham_essay.txt');
-  return response.data;
+  const response = await request('https://raw.githubusercontent.com/run-llama/llama_index/main/docs/docs/examples/data/paul_graham/paul_graham_essay.txt');
+  return await response.body.text();
 }
 
 /**
- * Fetches text from a URL
+ * Fetches text from a URL with HTML detection and processing
  * @param url - URL to fetch text from
- * @returns Promise containing text data
+ * @param options - HTML processing options
+ * @returns Promise containing processed text data
  */
-export async function fetchFromUrl(url: string): Promise<string> {
+export async function fetchFromUrl(
+  url: string, 
+  options: HtmlProcessingOptions = {}
+): Promise<string> {
   try {
     const spinner = ora('Fetching content from URL...').start();
-    const response = await axios.get(url);
-    let content = response.data;
     
-    // Check if content is HTML and strip tags if needed
-    if (isHtml(content)) {
-      spinner.text = 'HTML content detected, stripping tags...';
-      content = stripHtml(content);
-      spinner.succeed('HTML tags removed successfully');
+    const response = await request(url, {
+      headers: {
+        // Set a user agent to avoid being blocked by some sites
+        'User-Agent': 'Mozilla/5.0 (compatible; TypescriptRAG/1.0; +https://github.com/sergiobayona/typescript-rag-cli)'
+      }
+    });
+    
+    let content = await response.body.text();
+    
+    // Check if content is HTML
+    if (isHtml(content) && !options.preserveHtml) {
+      spinner.text = 'HTML content detected, processing...';
+      
+      let headerInfo = '';
+      
+      // Extract metadata if enabled
+      if (options.extractMetadata !== false) {
+        const metadata = extractMetadata(content);
+        if (metadata.title) {
+          spinner.text = `Processing HTML content: "${metadata.title}"`;
+        }
+        
+        // Add metadata as header if available
+        if (metadata.title) {
+          headerInfo += `# ${metadata.title}\n\n`;
+        }
+        if (metadata.description) {
+          headerInfo += `${metadata.description}\n\n`;
+        }
+        if (metadata.author) {
+          headerInfo += `Author: ${metadata.author}\n\n`;
+        }
+        if (headerInfo) {
+          headerInfo += `Source: ${url}\n\n---\n\n`;
+        }
+      }
+      
+      // Extract text content
+      content = extractTextFromHtml(content);
+      
+      // Add metadata header if we have it
+      if (headerInfo) {
+        content = headerInfo + content;
+      }
+      
+      spinner.succeed(`HTML processed successfully (${content.length} characters)`);
+    } else if (isHtml(content) && options.preserveHtml) {
+      spinner.succeed('HTML content preserved as requested');
     } else {
-      spinner.succeed('Content fetched successfully');
+      spinner.succeed('Content fetched successfully (not HTML)');
     }
     
     return content;
@@ -41,19 +96,49 @@ export async function fetchFromUrl(url: string): Promise<string> {
 }
 
 /**
- * Reads text from a local file
+ * Reads text from a local file with HTML detection
  * @param filePath - Path to the file
- * @returns Promise containing file contents
+ * @param options - HTML processing options
+ * @returns Promise containing processed file contents
  */
-export async function readFromFile(filePath: string): Promise<string> {
+export async function readFromFile(
+  filePath: string,
+  options: HtmlProcessingOptions = {}
+): Promise<string> {
   try {
     const absolutePath = path.resolve(filePath);
     const content = fs.readFileSync(absolutePath, 'utf8');
     
-    // Check if content is HTML and strip tags if needed
-    if (isHtml(content)) {
-      console.log('HTML content detected in file, stripping tags...');
-      return stripHtml(content);
+    // Check if content is HTML and process if needed
+    if (isHtml(content) && !options.preserveHtml) {
+      console.log('HTML content detected in file, processing...');
+      
+      let processedContent = extractTextFromHtml(content);
+      
+      // Add metadata if enabled
+      if (options.extractMetadata !== false) {
+        const metadata = extractMetadata(content);
+        let headerInfo = '';
+        
+        if (metadata.title) {
+          headerInfo += `# ${metadata.title}\n\n`;
+        }
+        if (metadata.description) {
+          headerInfo += `${metadata.description}\n\n`;
+        }
+        if (metadata.author) {
+          headerInfo += `Author: ${metadata.author}\n\n`;
+        }
+        
+        if (headerInfo) {
+          headerInfo += `Source: ${path.basename(filePath)}\n\n---\n\n`;
+          processedContent = headerInfo + processedContent;
+        }
+      }
+      
+      return processedContent;
+    } else if (isHtml(content) && options.preserveHtml) {
+      console.log('HTML content detected in file, preserving as requested');
     }
     
     return content;

@@ -8,6 +8,15 @@ import { VectorIndex } from './models/vectorIndex';
 import { runCompletion } from './services/completionService';
 import { DocumentStore } from './models/documentStore';
 
+interface AddCommandOptions {
+  url?: string;
+  file?: string;
+  name?: string;
+  chunkSize?: string;
+  preserveHtml?: boolean;
+  extractMetadata?: boolean;
+}
+
 // Define the Document interface to match DocumentStore
 interface Document {
   name: string;

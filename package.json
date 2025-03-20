@@ -1,0 +1,36 @@
+{
+    "name": "typescript-rag",
+    "version": "1.0.0",
+    "description": "Retrieval-Augmented Generation implementation in TypeScript",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "start": "ts-node src/index.ts",
+        "dev": "ts-node-dev --respawn src/index.ts",
+        "test": "jest"
+    },
+    "keywords": [
+        "rag",
+        "openai",
+        "embeddings",
+        "vector-search"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^1.6.7",
+        "dotenv": "^16.4.5",
+        "openai": "^4.28.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.12",
+        "@types/node": "^20.11.19",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.1.2",
+        "ts-node": "^10.9.2",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.3.3"
+    },
+    "type": "commonjs"
+}

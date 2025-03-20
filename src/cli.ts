@@ -1,4 +1,3 @@
-// src/cli.ts
 import { Command } from 'commander';
 import inquirer from 'inquirer';
 import * as fs from 'fs';
@@ -42,6 +41,8 @@ program
   .version('1.0.0');
 
 // Add command for adding a document
+// Updated section for the add command in src/cli.ts
+
 program
   .command('add')
   .description('Add a document to the RAG system')
@@ -49,7 +50,9 @@ program
   .option('-f, --file <file>', 'Local file path to read document from')
   .option('-n, --name <n>', 'Name to identify the document')
   .option('-c, --chunk-size <size>', 'Size of text chunks', '2048')
-  .action(async (options: AddCommandOptions) => {
+  .option('--preserve-html', 'Preserve HTML content instead of extracting text')
+  .option('--extract-metadata', 'Extract and include metadata from HTML documents', true)
+  .action(async (options: AddCommandOptions & { preserveHtml?: boolean, extractMetadata?: boolean }) => {
     try {
       let text: string;
       let name = options.name;
@@ -72,14 +75,24 @@ program
           throw new Error('URL is required');
         }
         console.log(`Fetching document from URL: ${url}`);
-        text = await fetchFromUrl(url);
+        
+        // Pass HTML processing options to fetchFromUrl
+        text = await fetchFromUrl(url, {
+          preserveHtml: options.preserveHtml ?? false,
+          extractMetadata: options.extractMetadata ?? true
+        });
       } else if (options.file) {
         const filePath = options.file;
         if (!filePath) {
           throw new Error('File path is required');
         }
         console.log(`Reading document from file: ${filePath}`);
-        text = await readFromFile(filePath);
+        
+        // Pass HTML processing options to readFromFile
+        text = await readFromFile(filePath, {
+          preserveHtml: options.preserveHtml ?? false,
+          extractMetadata: options.extractMetadata ?? true
+        });
       } else {
         // If neither URL nor file is provided, prompt user
         const sourceAnswer = await inquirer.prompt([{
@@ -96,7 +109,28 @@ program
             message: 'Enter URL:',
             validate: (input) => input.trim() !== '' ? true : 'URL cannot be empty'
           }]);
-          text = await fetchFromUrl(urlAnswer.url);
+          
+          // Prompt for HTML processing options
+          const htmlOptions = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'processHtml',
+              message: 'Process HTML content (extract text)?',
+              default: true
+            },
+            {
+              type: 'confirm',
+              name: 'extractMetadata',
+              message: 'Extract and include metadata from HTML?',
+              default: true,
+              when: (answers) => answers.processHtml
+            }
+          ]);
+          
+          text = await fetchFromUrl(urlAnswer.url, {
+            preserveHtml: !htmlOptions.processHtml,
+            extractMetadata: htmlOptions.extractMetadata
+          });
         } else if (sourceAnswer.source === 'File') {
           const fileAnswer = await inquirer.prompt([{
             type: 'input',
@@ -104,7 +138,28 @@ program
             message: 'Enter file path:',
             validate: (input) => fs.existsSync(input) ? true : 'File does not exist'
           }]);
-          text = await readFromFile(fileAnswer.filePath);
+          
+          // Prompt for HTML processing if file exists
+          const htmlOptions = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'processHtml',
+              message: 'Process HTML content if detected (extract text)?',
+              default: true
+            },
+            {
+              type: 'confirm',
+              name: 'extractMetadata',
+              message: 'Extract and include metadata from HTML?',
+              default: true,
+              when: (answers) => answers.processHtml
+            }
+          ]);
+          
+          text = await readFromFile(fileAnswer.filePath, {
+            preserveHtml: !htmlOptions.processHtml,
+            extractMetadata: htmlOptions.extractMetadata
+          });
         } else {
           console.log('Fetching Paul Graham essay...');
           text = await fetchEssay();

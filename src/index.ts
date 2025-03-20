@@ -3,6 +3,7 @@ import { VectorIndex } from './models/vectorIndex';
 import { getTextEmbedding } from './services/embeddingService';
 import { runCompletion } from './services/completionService';
 import { fetchEssay, chunkText, fetchFromUrl, readFromFile } from './services/dataService';
+import { isHtml, extractTextFromHtml, extractMetadata } from './utils/enhancedHtmlUtils';
 import { program } from './cli';
 
 // Export public API
@@ -15,5 +16,8 @@ export {
   fetchFromUrl,
   readFromFile,
   chunkText,
+  isHtml,
+  extractTextFromHtml,
+  extractMetadata,
   program
 };

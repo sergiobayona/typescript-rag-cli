@@ -193,6 +193,34 @@ npm run lint
 npm run format
 ```
 
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and delivery:
+
+### CI Workflow
+
+The CI workflow runs on every push to the main branch and on pull requests:
+
+- Tests code on multiple Node.js versions (14, 16, 18) and operating systems
+- Runs the linter to ensure code quality
+- Builds the project to check for compilation errors
+- Runs all tests with coverage reporting
+
+### CD Workflow
+
+The CD workflow automates publishing to npm:
+
+- Triggered when a new GitHub release is created
+- Runs tests and builds the project
+- Publishes the package to the npm registry
+
+### Setting Up Secrets
+
+For the workflows to function properly, you'll need to add these secrets to your GitHub repository:
+
+1. `OPENAI_API_KEY` - Your OpenAI API key for running tests
+2. `NPM_TOKEN` - Your npm access token for publishing
+
 ## License
 
 MIT

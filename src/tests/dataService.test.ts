@@ -2,7 +2,7 @@ import { request } from 'undici';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isHtml, extractTextFromHtml, extractMetadata } from '../utils/enhancedHtmlUtils';
-import ora from 'ora';
+import _ora from 'ora';
 import { fetchEssay, fetchFromUrl, readFromFile, chunkText } from '../services/dataService';
 
 // Mock dependencies

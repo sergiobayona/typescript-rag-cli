@@ -150,7 +150,7 @@ describe('Enhanced HTML Utils', () => {
 
     it('should extract text from paragraphs and headers when main content areas are empty', () => {
       // Mock cheerio selectors with different content areas
-      const mockBodyContent: string[] = [];
+      const _mockBodyContent: string[] = [];
       
       // Create a mock each function that populates bodyContent array
       const mockParagraphsEach = jest.fn().mockImplementation((callback) => {
@@ -239,7 +239,7 @@ describe('Enhanced HTML Utils', () => {
       (cheerio.load as jest.Mock).mockReturnValue(mockCheerioFunc);
       
       const html = '<html><body>Body content</body></html>';
-      const result = extractTextFromHtml(html);
+      const _result = extractTextFromHtml(html);
       
       // Should get content from body element
       expect(mockBodyText).toHaveBeenCalled();

@@ -193,47 +193,6 @@ npm run lint
 npm run format
 ```
 
-### Code Quality
-
-This project uses ESLint for code linting and Prettier for code formatting:
-
-- ESLint: Enforces code quality rules and best practices for TypeScript
-- Prettier: Ensures consistent code formatting
-
-Configuration files:
-- `.eslintrc.js` - ESLint configuration
-- `.prettierrc` - Prettier configuration
-
-## CI/CD Pipeline
-
-This project uses GitHub Actions for continuous integration and delivery:
-
-### CI Workflow
-
-The CI workflow runs on every push to the main branch and on pull requests:
-
-- Tests code on multiple Node.js versions (14, 16, 18) and operating systems
-- Runs the linter to ensure code quality
-- Builds the project to check for compilation errors
-- Runs all tests with coverage reporting
-
-### CD Workflow
-
-The CD workflow automates publishing to npm:
-
-- Triggered when a new GitHub release is created
-- Runs tests and builds the project
-- Publishes the package to the npm registry
-
-### Setting Up Secrets
-
-For the workflows to function properly, you'll need to add this secret to your GitHub repository:
-
-1. `NPM_TOKEN` - Your npm access token for publishing
-
-> **Note**: Your tests use mocked OpenAI API calls so no API key is required for CI/CD.
-
-> **Important**: Make sure to commit your `package-lock.json` file to the repository for the CI/CD pipeline to work properly with caching enabled. This ensures reproducible builds and faster installation of dependencies.
 
 ## License
 

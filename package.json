@@ -7,13 +7,19 @@
     "bin": {
         "ts-rag": "dist/bin.js"
     },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "tsc",
         "start": "ts-node src/bin.ts",
         "dev": "ts-node-dev --respawn src/bin.ts",
         "test": "jest",
         "lint": "eslint src/**/*.ts",
-        "format": "prettier --write \"src/**/*.ts\""
+        "format": "prettier --write \"src/**/*.ts\"",
+        "prepublishOnly": "npm run lint && npm run test && npm run build"
     },
     "keywords": [
         "rag",
@@ -48,5 +54,17 @@
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.3.3"
     },
-    "type": "commonjs"
+    "type": "commonjs",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yourusername/typescript-rag-cli.git"
+    },
+    "bugs": {
+        "url": "https://github.com/yourusername/typescript-rag-cli/issues"
+    },
+    "homepage": "https://github.com/yourusername/typescript-rag-cli#readme",
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "private": false
 }

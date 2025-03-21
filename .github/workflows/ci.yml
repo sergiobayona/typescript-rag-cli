@@ -49,14 +49,18 @@ jobs:
 
       - name: Lint
         run: npm run lint -- --max-warnings=0
+        if: runner.os != 'Windows'  # Skip on Windows due to different quoting rules
+
+      - name: Lint (Windows)
+        run: npx eslint src/**/*.ts --max-warnings=0
+        if: runner.os == 'Windows'  # Windows-specific command
 
       - name: Build
         run: npm run build
 
       - name: Test
         run: npm test
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        # No OpenAI API key needed as tests use mocks
 
   code-coverage:
     name: Code Coverage
@@ -95,8 +99,7 @@ jobs:
 
       - name: Generate coverage report
         run: npm test -- --coverage
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        # No OpenAI API key needed as tests use mocks
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3 

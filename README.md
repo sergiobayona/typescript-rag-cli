@@ -227,10 +227,11 @@ The CD workflow automates publishing to npm:
 
 ### Setting Up Secrets
 
-For the workflows to function properly, you'll need to add these secrets to your GitHub repository:
+For the workflows to function properly, you'll need to add this secret to your GitHub repository:
 
-1. `OPENAI_API_KEY` - Your OpenAI API key for running tests
-2. `NPM_TOKEN` - Your npm access token for publishing
+1. `NPM_TOKEN` - Your npm access token for publishing
+
+> **Note**: Your tests use mocked OpenAI API calls so no API key is required for CI/CD.
 
 > **Important**: Make sure to commit your `package-lock.json` file to the repository for the CI/CD pipeline to work properly with caching enabled. This ensures reproducible builds and faster installation of dependencies.
 

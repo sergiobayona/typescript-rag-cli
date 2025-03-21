@@ -28,5 +28,27 @@ module.exports = {
     // Allow console logs as this is a CLI application
     'no-console': 'off',
   },
-  ignorePatterns: ['dist/', 'node_modules/', 'jest.config.ts']
+  ignorePatterns: ['dist/', 'node_modules/', 'jest.config.ts'],
+  overrides: [
+    {
+      // Disable TypeScript-specific rules that require type information for test files
+      // This avoids the need for including tests in tsconfig.json
+      files: ['**/*.test.ts'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        // Remove the project option for test files
+        ecmaVersion: 2020,
+        sourceType: 'module',
+      },
+      rules: {
+        // Disable rules that require type information
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+      }
+    }
+  ]
 }; 

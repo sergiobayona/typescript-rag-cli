@@ -17,7 +17,7 @@
         "start": "ts-node src/bin.ts",
         "dev": "ts-node-dev --respawn src/bin.ts",
         "test": "jest",
-        "lint": "eslint src/**/*.ts",
+        "lint": "eslint 'src/**/*.ts'",
         "format": "prettier --write \"src/**/*.ts\"",
         "prepublishOnly": "npm run lint && npm run test && npm run build"
     },

@@ -40,12 +40,11 @@ jobs:
         shell: bash
 
       - name: Lint
-        run: npm run lint -- --max-warnings=0
+        run: npx eslint src/**/*.ts --max-warnings=0
 
       - name: Test
         run: npm test
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        # No OpenAI API key needed as tests use mocks
 
       - name: Build
         run: npm run build

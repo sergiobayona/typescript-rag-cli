@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fetchEssay, chunkText, fetchFromUrl, readFromFile } from './services/dataService';
-import { getTextEmbedding } from './services/embeddingService';
+import { getTextEmbedding, getEmbeddingsWithProgress } from './services/embeddingService';
 import { VectorIndex } from './models/vectorIndex';
 import { runCompletion } from './services/completionService';
 import { DocumentStore } from './models/documentStore';
@@ -183,9 +183,7 @@ program
       console.log(`Created ${chunks.length} chunks of size ${chunkSize}`);
       
       console.log('Generating embeddings (this may take a while)...');
-      const textEmbeddings = await Promise.all(
-        chunks.map(chunk => getTextEmbedding(chunk))
-      );
+      const textEmbeddings = await getEmbeddingsWithProgress(chunks);
       
       // Create a vector index and store the document
       const vectorIndex = new VectorIndex(textEmbeddings);
@@ -385,10 +383,11 @@ program
       console.error('Error in interactive mode:', error);
     }
   });
-  program
+
+program
   .command('remove')
   .description('Remove a document from the RAG system')
-  .option('-n, --name <name>', 'Name of the document to remove')
+  .option('-n, --name <n>', 'Name of the document to remove')
   .action(async (options: { name?: string }) => {
     try {
       const documents = documentStore.listDocuments();

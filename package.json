@@ -30,6 +30,7 @@
         "html-processing"
     ],
     "author": "Sergio Bayona",
+    "email": "bayona.sergio@gmail.com",
     "license": "MIT",
     "dependencies": {
         "commander": "^11.1.0",
@@ -57,12 +58,12 @@
     "type": "commonjs",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/yourusername/typescript-rag-cli.git"
+        "url": "git+https://github.com/sergiobayona/typescript-rag-cli.git"
     },
     "bugs": {
-        "url": "https://github.com/yourusername/typescript-rag-cli/issues"
+        "url": "https://github.com/sergiobayona/typescript-rag-cli/issues"
     },
-    "homepage": "https://github.com/yourusername/typescript-rag-cli#readme",
+    "homepage": "https://github.com/sergiobayona/typescript-rag-cli#README.md",
     "engines": {
         "node": ">=14.0.0"
     },

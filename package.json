@@ -10,7 +10,7 @@
     "files": [
         "dist",
         "README.md",
-        "LICENSE"
+        "MIT-LICENSE"
     ],
     "scripts": {
         "build": "tsc",

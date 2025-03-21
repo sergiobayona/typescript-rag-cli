@@ -33,14 +33,26 @@ export async function getEmbeddingsWithProgress(input: string | string[]): Promi
   let completed = 0;
   
   try {
-    const embeddings = await Promise.all(
-      chunks.map(async (chunk) => {
-        const embedding = await getTextEmbeddingImpl(chunk);
-        completed++;
-        spinner.text = `Generating embeddings... ${completed}/${chunks.length}`;
-        return embedding;
-      })
-    );
+    // Process chunks in batches to allow the spinner to update visually
+    const batchSize = 5; // Process 5 chunks at a time
+    const embeddings: number[][] = [];
+    
+    // Process chunks in sequential batches
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      
+      // Process this batch in parallel
+      const batchResults = await Promise.all(
+        batch.map(chunk => getTextEmbeddingImpl(chunk))
+      );
+      
+      // Update progress after each batch
+      completed += batch.length;
+      spinner.text = `Generating embeddings... ${completed}/${chunks.length}`;
+      
+      // Add results to our embeddings array
+      embeddings.push(...batchResults);
+    }
     
     spinner.succeed(`Generated ${embeddings.length} embeddings successfully`);
     return embeddings;

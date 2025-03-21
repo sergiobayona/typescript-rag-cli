@@ -1,0 +1,48 @@
+# Source files (since we're publishing compiled code)
+src/
+tests/
+src/tests/
+
+# Development configurations
+tsconfig.json
+jest.config.ts
+.eslintrc.js
+.prettierrc
+.github/
+
+# Test files
+*.test.ts
+*.spec.ts
+coverage/
+
+# Environment files
+.env
+.env.*
+
+# Data and temp directories
+.ts-rag-data/
+tmp/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Log files
+*.log
+logs/
+npm-debug.log*
+
+# Build process
+.travis.yml
+.gitlab-ci.yml
+.circleci/
+
+# Git files
+.git/
+.gitignore
+
+# Misc
+*.tgz
+.DS_Store
+Thumbs.db

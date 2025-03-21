@@ -221,6 +221,8 @@ For the workflows to function properly, you'll need to add these secrets to your
 1. `OPENAI_API_KEY` - Your OpenAI API key for running tests
 2. `NPM_TOKEN` - Your npm access token for publishing
 
+> **Important**: Make sure to commit your `package-lock.json` file to the repository for the CI/CD pipeline to work properly with caching enabled. This ensures reproducible builds and faster installation of dependencies.
+
 ## License
 
 MIT

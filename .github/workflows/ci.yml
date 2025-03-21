@@ -20,14 +20,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Check if package-lock.json exists
+      - name: Check for package-lock.json
+        id: check-lockfile
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "lockfile=true" >> $GITHUB_OUTPUT
+          else
+            echo "lockfile=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
+          cache: ${{ steps.check-lockfile.outputs.lockfile == 'true' && 'npm' || '' }}
 
       - name: Install dependencies
-        run: npm ci
+        # Use npm ci if lock file exists, otherwise use npm install
+        run: |
+          if [ "${{ steps.check-lockfile.outputs.lockfile }}" == "true" ]; then
+            npm ci
+          else
+            npm install
+          fi
+        shell: bash
 
       - name: Lint
         run: npm run lint
@@ -48,14 +66,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Check if package-lock.json exists
+      - name: Check for package-lock.json
+        id: check-lockfile
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "lockfile=true" >> $GITHUB_OUTPUT
+          else
+            echo "lockfile=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-          cache: 'npm'
+          cache: ${{ steps.check-lockfile.outputs.lockfile == 'true' && 'npm' || '' }}
 
       - name: Install dependencies
-        run: npm ci
+        # Use npm ci if lock file exists, otherwise use npm install
+        run: |
+          if [ "${{ steps.check-lockfile.outputs.lockfile }}" == "true" ]; then
+            npm ci
+          else
+            npm install
+          fi
+        shell: bash
 
       - name: Generate coverage report
         run: npm test -- --coverage

@@ -6,7 +6,7 @@ import { isHtml, extractTextFromHtml, extractMetadata } from '../utils/enhancedH
 import ora from 'ora';
 
 /**
- * HTML processing options
+ * HTML processing options for document fetching and reading
  */
 export interface HtmlProcessingOptions {
   /** Whether to preserve original HTML instead of extracting text */
@@ -16,8 +16,17 @@ export interface HtmlProcessingOptions {
 }
 
 /**
- * Fetches Paul Graham's essay from GitHub
- * @returns Promise containing essay text
+ * Fetches Paul Graham's essay from GitHub as sample content
+ * 
+ * This provides an easy way to test the RAG system with high-quality sample text.
+ * The essay is fetched from the LlamaIndex example repository.
+ * 
+ * @returns Promise containing the full text of Paul Graham's essay
+ * @throws Error if fetching fails
+ * 
+ * @example
+ * const essayText = await fetchEssay();
+ * console.log(`Fetched essay with ${essayText.length} characters`);
  */
 export async function fetchEssay(): Promise<string> {
   const response = await request('https://raw.githubusercontent.com/run-llama/llama_index/main/docs/docs/examples/data/paul_graham/paul_graham_essay.txt');
@@ -25,10 +34,28 @@ export async function fetchEssay(): Promise<string> {
 }
 
 /**
- * Fetches text from a URL with HTML detection and processing
+ * Fetches and processes text content from a URL with HTML detection
+ * 
+ * This function:
+ * 1. Fetches content from the specified URL
+ * 2. Detects if the content is HTML
+ * 3. If HTML, extracts readable text and metadata (unless preserveHtml is true)
+ * 4. Shows progress with an ora spinner
+ * 
  * @param url - URL to fetch text from
- * @param options - HTML processing options
- * @returns Promise containing processed text data
+ * @param options - HTML processing options for customizing extraction behavior
+ * @returns Promise containing processed text content
+ * @throws Error if fetching or processing fails
+ * 
+ * @example
+ * // Basic usage
+ * const content = await fetchFromUrl('https://example.com/article');
+ * 
+ * // Preserve HTML instead of extracting text
+ * const htmlContent = await fetchFromUrl('https://example.com', { preserveHtml: true });
+ * 
+ * // Disable metadata extraction
+ * const textOnly = await fetchFromUrl('https://example.com/page', { extractMetadata: false });
  */
 export async function fetchFromUrl(
   url: string, 
@@ -96,10 +123,24 @@ export async function fetchFromUrl(
 }
 
 /**
- * Reads text from a local file with HTML detection
- * @param filePath - Path to the file
- * @param options - HTML processing options
+ * Reads and processes text from a local file with HTML detection
+ * 
+ * This function:
+ * 1. Reads content from the specified file path
+ * 2. Detects if the content is HTML
+ * 3. If HTML, extracts readable text and metadata (unless preserveHtml is true)
+ * 
+ * @param filePath - Path to the local file to read
+ * @param options - HTML processing options for customizing extraction behavior
  * @returns Promise containing processed file contents
+ * @throws Error if file reading or processing fails
+ * 
+ * @example
+ * // Basic usage
+ * const content = await readFromFile('./document.html');
+ * 
+ * // Preserve HTML
+ * const htmlContent = await readFromFile('./page.html', { preserveHtml: true });
  */
 export async function readFromFile(
   filePath: string,
@@ -148,10 +189,24 @@ export async function readFromFile(
 }
 
 /**
- * Splits text into chunks of specified size
- * @param text - Text to chunk
- * @param chunkSize - Size of each chunk in characters
+ * Intelligently splits text into chunks of specified size
+ * 
+ * This function uses a smart chunking algorithm that attempts to:
+ * 1. Split at paragraph boundaries when possible
+ * 2. Fall back to sentence boundaries when paragraphs are too large
+ * 3. Split at word boundaries as a last resort
+ * 
+ * The goal is to maintain semantic coherence while respecting size limits.
+ * 
+ * @param text - Text content to split into chunks
+ * @param chunkSize - Maximum size of each chunk in characters
  * @returns Array of text chunks
+ * 
+ * @example
+ * // Split text into chunks of 2048 characters
+ * const text = "Very long document text...";
+ * const chunks = chunkText(text, 2048);
+ * console.log(`Split into ${chunks.length} chunks`);
  */
 export function chunkText(text: string, chunkSize: number): string[] {
   const chunks: string[] = [];

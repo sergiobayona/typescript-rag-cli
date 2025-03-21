@@ -2,6 +2,9 @@ import { VectorIndex } from './vectorIndex';
 import * as fs from 'fs';
 import * as path from 'path';
 
+/**
+ * Interface representing a document with its chunks and vector index
+ */
 interface Document {
   name: string;
   text: string;
@@ -9,10 +12,17 @@ interface Document {
   vectorIndex: VectorIndex;
 }
 
+/**
+ * Manages storage, retrieval, and persistence of documents and their vector embeddings
+ */
 export class DocumentStore {
   private documents: Map<string, Document>;
   private storageDir: string;
 
+  /**
+   * Creates a new DocumentStore with specified storage directory
+   * @param storageDir - Directory to store document data (defaults to .ts-rag-data)
+   */
   constructor(storageDir = '.ts-rag-data') {
     this.documents = new Map();
     this.storageDir = storageDir;
@@ -28,6 +38,10 @@ export class DocumentStore {
 
   /**
    * Add a document to the store
+   * @param name - Unique identifier for the document
+   * @param text - Full text content of the document
+   * @param chunks - Text split into chunks for retrieval
+   * @param vectorIndex - Vector index for semantic search
    */
   public addDocument(name: string, text: string, chunks: string[], vectorIndex: VectorIndex): void {
     const document: Document = { name, text, chunks, vectorIndex };
@@ -39,6 +53,8 @@ export class DocumentStore {
 
   /**
    * Get a document by name
+   * @param name - Name of the document to retrieve
+   * @returns The document if found, undefined otherwise
    */
   public getDocument(name: string): Document | undefined {
     return this.documents.get(name);
@@ -46,6 +62,7 @@ export class DocumentStore {
 
   /**
    * List all available documents
+   * @returns Array of all documents in the store
    */
   public listDocuments(): Document[] {
     return Array.from(this.documents.values());
@@ -53,6 +70,8 @@ export class DocumentStore {
 
   /**
    * Remove a document from the store
+   * @param name - Name of the document to remove
+   * @returns Boolean indicating if removal was successful
    */
   public removeDocument(name: string): boolean {
     if (!this.documents.has(name)) {
@@ -70,6 +89,7 @@ export class DocumentStore {
 
   /**
    * Save document to disk
+   * @param document - Document to save
    */
   private saveDocument(document: Document): void {
     const docDir = path.join(this.storageDir, this.sanitizeFileName(document.name));
@@ -107,6 +127,8 @@ export class DocumentStore {
 
   /**
    * Save vector index to file
+   * @param vectorIndex - Vector index to save
+   * @param filePath - Path to save the vector index
    */
   private saveVectorIndex(vectorIndex: VectorIndex, filePath: string): void {
     // Get vectors from the index (assuming we add a getter)
@@ -116,6 +138,7 @@ export class DocumentStore {
 
   /**
    * Load documents from disk
+   * Reads all document folders from storage directory and loads them into memory
    */
   private loadDocuments(): void {
     if (!fs.existsSync(this.storageDir)) {
@@ -163,6 +186,8 @@ export class DocumentStore {
 
   /**
    * Sanitize a file name for disk storage
+   * @param fileName - Original file name
+   * @returns Sanitized file name safe for use in file system
    */
   private sanitizeFileName(fileName: string): string {
     return fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();

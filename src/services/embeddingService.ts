@@ -17,9 +17,21 @@ function getTextEmbeddingImpl(input: string): Promise<number[]> {
 }
 
 /**
- * Generate embeddings for text input(s) with progress indicator
- * @param input - Single text or array of text chunks to embed
- * @returns Promise containing vector embedding(s)
+ * Generate embeddings for text input(s) with a visual progress indicator
+ * 
+ * This function handles both single text inputs and arrays of text chunks:
+ * - For a single string: Returns a single vector embedding
+ * - For an array of strings: Processes in batches with progress indicator
+ * 
+ * @param input - Single text string or array of text chunks to embed
+ * @returns Promise containing vector embedding(s) from OpenAI
+ * @example
+ * // Single text embedding
+ * const embedding = await getEmbeddingsWithProgress("What is RAG?");
+ * 
+ * // Multiple text embeddings with progress indicator
+ * const chunks = ["First chunk", "Second chunk", "Third chunk"];
+ * const embeddings = await getEmbeddingsWithProgress(chunks);
  */
 export async function getEmbeddingsWithProgress(input: string | string[]): Promise<number[] | number[][]> {
   // Handle single string input

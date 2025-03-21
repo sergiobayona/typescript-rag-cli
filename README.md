@@ -32,7 +32,7 @@ The application uses OpenAI's API for embeddings and completions to enable seman
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/typescript-rag-cli.git
+   git clone https://github.com/sergiobayona/typescript-rag-cli.git
    cd typescript-rag-cli
    ```
 

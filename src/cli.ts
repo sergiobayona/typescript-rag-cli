@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fetchEssay, chunkText, fetchFromUrl, readFromFile } from './services/dataService';
-import { getTextEmbedding, getEmbeddingsWithProgress } from './services/embeddingService';
+import { getEmbeddingsWithProgress } from './services/embeddingService';
 import { VectorIndex } from './models/vectorIndex';
 import { runCompletion } from './services/completionService';
 import { DocumentStore } from './models/documentStore';
@@ -183,7 +183,7 @@ program
       console.log(`Created ${chunks.length} chunks of size ${chunkSize}`);
       
       console.log('Generating embeddings (this may take a while)...');
-      const textEmbeddings = await getEmbeddingsWithProgress(chunks);
+      const textEmbeddings = await getEmbeddingsWithProgress(chunks) as number[][];
       
       // Create a vector index and store the document
       const vectorIndex = new VectorIndex(textEmbeddings);
@@ -255,13 +255,13 @@ program
           validate: (input: string) => input.trim() !== '' ? true : 'Question cannot be empty'
         }]);
         question = questionAnswer.userQuestion;
-        questionEmbedding = await getTextEmbedding(question);
+        questionEmbedding = await getEmbeddingsWithProgress(question) as number[];
       } else {
         if (!question) {
           throw new Error('Question is required');
         }
         console.log(`Processing query: ${question}`);
-        questionEmbedding = await getTextEmbedding(question!);
+        questionEmbedding = await getEmbeddingsWithProgress(question!) as number[];
       }
 
       let retrievedChunks: string[] = [];

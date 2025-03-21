@@ -17,20 +17,18 @@ function getTextEmbeddingImpl(input: string): Promise<number[]> {
 }
 
 /**
- * Generate text embedding for a single text input
- * @param input - Text to embed
- * @returns Promise containing vector embedding
+ * Generate embeddings for text input(s) with progress indicator
+ * @param input - Single text or array of text chunks to embed
+ * @returns Promise containing vector embedding(s)
  */
-export async function getTextEmbedding(input: string): Promise<number[]> {
-  return getTextEmbeddingImpl(input);
-}
-
-/**
- * Generate embeddings for multiple text chunks with progress indicator
- * @param chunks - Array of text chunks to embed
- * @returns Promise containing array of vector embeddings
- */
-export async function getEmbeddingsWithProgress(chunks: string[]): Promise<number[][]> {
+export async function getEmbeddingsWithProgress(input: string | string[]): Promise<number[] | number[][]> {
+  // Handle single string input
+  if (typeof input === 'string') {
+    return getTextEmbeddingImpl(input);
+  }
+  
+  // Handle array of strings with progress indicator
+  const chunks = input;
   const spinner = ora('Generating embeddings...').start();
   let completed = 0;
   

@@ -1,4 +1,4 @@
-import { getTextEmbedding, getEmbeddingsWithProgress } from '../services/embeddingService';
+import { getEmbeddingsWithProgress } from '../services/embeddingService';
 import { runCompletion } from '../services/completionService';
 
 // Mock OpenAI
@@ -32,8 +32,8 @@ jest.mock('ora', () => {
 
 describe('OpenAI Services', () => {
   describe('embeddingService', () => {
-    it('should generate embeddings for text', async () => {
-      const result = await getTextEmbedding('Test text');
+    it('should generate embedding for a single text input', async () => {
+      const result = await getEmbeddingsWithProgress('Test text');
       expect(result).toEqual([0.1, 0.2, 0.3]);
     });
 

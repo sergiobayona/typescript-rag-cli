@@ -1,6 +1,6 @@
 import { DocumentStore } from './models/documentStore';
 import { VectorIndex } from './models/vectorIndex';
-import { getTextEmbedding, getEmbeddingsWithProgress } from './services/embeddingService';
+import { getEmbeddingsWithProgress } from './services/embeddingService';
 import { runCompletion } from './services/completionService';
 import { fetchEssay, chunkText, fetchFromUrl, readFromFile } from './services/dataService';
 import { isHtml, extractTextFromHtml, extractMetadata } from './utils/enhancedHtmlUtils';
@@ -10,7 +10,6 @@ import { program } from './cli';
 export {
   DocumentStore,
   VectorIndex,
-  getTextEmbedding,
   getEmbeddingsWithProgress,
   runCompletion,
   fetchEssay,

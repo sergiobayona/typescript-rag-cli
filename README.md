@@ -186,12 +186,23 @@ npm run build
 # Run tests
 npm test
 
-# Lint code
+# Run linting
 npm run lint
 
 # Format code
 npm run format
 ```
+
+### Code Quality
+
+This project uses ESLint for code linting and Prettier for code formatting:
+
+- ESLint: Enforces code quality rules and best practices for TypeScript
+- Prettier: Ensures consistent code formatting
+
+Configuration files:
+- `.eslintrc.js` - ESLint configuration
+- `.prettierrc` - Prettier configuration
 
 ## CI/CD Pipeline
 

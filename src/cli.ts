@@ -319,7 +319,8 @@ program
     console.log('Starting interactive RAG mode. Type "exit" to quit.');
     console.log('Type "help" to see available commands.');
     
-    await this.mainMenu();
+    const cli = new CLI();
+    await cli.interactive();
   });
 
 program
@@ -666,7 +667,7 @@ Answer:`;
         console.log('Starting interactive RAG mode. Type "exit" to quit.');
         console.log('Type "help" to see available commands.');
         
-        await this.mainMenu();
+        await this.interactive();
       });
 
     this.program
@@ -809,4 +810,8 @@ Answer:`;
   }
 }
 
-export { program };
+// Create a CLI instance
+const cli = new CLI();
+
+// Export the program to maintain compatibility with existing code
+export const program = cli.program;
